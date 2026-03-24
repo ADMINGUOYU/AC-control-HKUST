@@ -10,9 +10,9 @@ import sys
 import threading
 
 from ac_control.automation import ACController, LoginConfig
-from ac_control.server import start_status_server
+from ac_control.scheduler import ScheduleRunner, Timetable
+from ac_control.server import start_control_server
 from ac_control.state import StatusStore
-from ac_control.ui import ACControlWindow
 
 # Argument parser
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -45,13 +45,16 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 # Main function
 def main(argv: list[str] | None = None) -> None:
 
+    # Print welcome message
+    print("Welcome to the AC Control System!")
+
     # Parse command-line arguments
     args = parse_args(argv or sys.argv[1:])
 
     # Create login configuration
     login_config = LoginConfig(
-        username = args.username, 
-        password = args.password, 
+        username = args.username,
+        password = args.password,
         headless = args.headless
     )
 
@@ -59,21 +62,39 @@ def main(argv: list[str] | None = None) -> None:
     print("Starting AC controller...")
     controller = ACController(login_config)
     controller.start()
-    
-    # Initialize the status store and start the status server 
-    # in a separate thread
+
+    # Initialize status store, timetable, and scheduler
     status_store = StatusStore()
+    timetable = Timetable()
+    scheduler = ScheduleRunner(controller, timetable, status_store)
+    scheduler.start()
 
-    # Start the status server in a separate thread to avoid blocking
-    # the main thread
-    print(f"Starting status server on port {args.port}...")
-    server = start_status_server(args.port, status_store)
-    threading.Thread(target = server.serve_forever, daemon = True).start()
+    # Start the control server in a separate thread
+    print(f"Starting control server on port {args.port}...")
+    server = start_control_server(args.port, status_store, timetable, controller)
+    server_thread = threading.Thread(target = server.serve_forever, daemon = True)
+    server_thread.start()
 
-    # Start the UI (this will block until the UI is closed)
-    # Hand over control
-    print("Starting UI...")
-    ACControlWindow(controller, status_store)
+    # Keep the main thread alive while the server is runnings
+    # Print in bold
+    print(f"\n\033[1mWeb dashboard ready.\033[0m Please access it at:\t\nhttp://localhost:{args.port} or http://<IP_ADDRESS>:{args.port} from other devices on the same network.")
+    print("Press [Any Key] to stop the application safely.")
+    
+    # Wait for user input to exit, or handle keyboard interrupt gracefully
+    try:
+        # Wait for user input to exit
+        input() 
+    except EOFError:
+        pass 
+   
+    # Clean up resources on exit
+    print("Stopping scheduler and server...")
+    scheduler.stop()
+    scheduler.join(timeout = 5)
+    server.shutdown()
+    print("Logging out from AC controller...")
+    controller.logout()
+    print("Application stopped.")
 
 # Entry point
 if __name__ == "__main__":

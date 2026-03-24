@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>AC Control</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      background: #134458;
+      color: #63c3ae;
+    }
+
+    h1,
+    h2 {
+      color: #74e2ca;
+    }
+
+    section {
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: #1e293b;
+      border-radius: 8px;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      margin-top: 0.5rem;
+      cursor: pointer;
+      background: #13ccc339;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+
+    label {
+      display: block;
+      margin: 0.4rem 0 0.1rem;
+    }
+
+    input {
+      padding: 0.4rem;
+      width: 12rem;
+      background-color: #b285ff1f;
+      color: #ffffff;
+      border: 1px solid #334155;
+      border-radius: 4px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
+    }
+
+    th,
+    td {
+      padding: 0.5rem;
+      border-bottom: 1px solid #334155;
+      text-align: left;
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+      gap: 1.25rem;
+      padding: 1rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Dashboard Header -->
+  <h1>AC Control Dashboard</h1>
+
+  <!-- Status Section -->
+  <section>
+    <div class="status-grid">
+      <div><strong>Current Time:</strong> <span id="currentTime">-</span></div>
+      <div><strong>Balance:</strong> <span id="balance">-</span></div>
+      <div><strong>Status:</strong> <span id="status">-</span></div>
+      <div><strong>Active Schedule:</strong> <span id="activeSchedule">-</span></div>
+      <div><strong>Phase:</strong> <span id="phase">-</span></div>
+      <div><strong>Next Switch:</strong> <span id="nextSwitch">-</span></div>
+    </div>
+    <button id="toggleBtn">Toggle Power</button>
+    <button id="enableSchedulesBtn">Enable Schedules</button>
+  </section>
+
+  <!-- Schedule Management Section -->
+  <section>
+    <h2>Add Schedule</h2>
+    <form id="scheduleForm">
+      <label for="name">Name (optional)</label>
+      <input id="name" name="name" placeholder="Schedule Name (optional)" />
+      <label for="start">Start Time</label>
+      <input id="start" name="start" type="time" required />
+      <label for="end">End Time</label>
+      <input id="end" name="end" type="time" required />
+      <label for="on">On Duration (seconds)</label>
+      <input id="on" name="on" type="number" min="1" required />
+      <label for="off">Off Duration (seconds)</label>
+      <input id="off" name="off" type="number" min="1" required />
+      <button type="submit">Save Schedule</button>
+    </form>
+  </section>
+
+  <!-- Existing Schedules Section -->
+  <section>
+    <h2>Schedules</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Window</th>
+          <th>On (s)</th>
+          <th>Off (s)</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="scheduleTable">
+      </tbody>
+    </table>
+  </section>
+
+  <!-- JavaScript to handle API interactions -->
+  <script>
+
+    // Cache references to status elements
+    // NOTE: we get the references to the window elements
+    const statusEls = {
+      current_time: document.getElementById("currentTime"),
+      balance: document.getElementById("balance"),
+      status: document.getElementById("status"),
+      active_schedule_name: document.getElementById("activeSchedule"),
+      schedule_phase: document.getElementById("phase"),
+      next_switch_time: document.getElementById("nextSwitch"),
+    };
+
+    // Function to fetch and update status information
+    async function fetchStatus() {
+      // Fetch status data from the API
+      const res = await fetch('/api/status');
+      // If the response is not OK, exit the function
+      if (!res.ok) return;
+      // Parse the JSON data from the response
+      const data = await res.json();
+      // Update the text content of each status element with the corresponding data
+      for (const key in statusEls) {
+        statusEls[key].textContent = data[key] ?? 'N/A';
+      }
+    }
+
+    // Function to fetch and display schedules in the table
+    async function fetchSchedules() {
+      // Fetch schedules data from the API
+      const res = await fetch('/api/schedules');
+      // If the response is not OK, exit the function
+      if (!res.ok) return;
+      // Parse the JSON data from the response
+      const { schedules } = await res.json();
+      // Get the schedule table body element and clear its current content
+      // the reference to the schedule table body element
+      const table = document.getElementById('scheduleTable');
+      // Clear existing rows in the schedule table
+      table.innerHTML = '';
+      // Iterate over each schedule and create a new row in the table
+      schedules.forEach((s) => {
+        const row = document.createElement('tr');
+        // Set the inner HTML of the row with schedule details and a delete button
+        row.innerHTML = `
+          <td>${s.name}</td>
+          <td>${s.start_time} - ${s.end_time}</td>
+          <td>${s.on_duration_seconds}</td>
+          <td>${s.off_duration_seconds}</td>
+          <td><button data-id="${s.id}">Delete</button></td>
+        `;
+        row.querySelector('button').addEventListener('click', async () => {
+          // Send a DELETE request to the API to delete the schedule with
+          // the specified ID
+          await fetch('/api/schedules/' + s.id, { method: 'DELETE' });
+          // After deletion, fetch the updated list of schedules to refresh
+          // the table
+          fetchSchedules();
+        });
+        table.appendChild(row);
+      });
+    }
+
+    // Handle form submission to add a new schedule
+    document.getElementById('scheduleForm').addEventListener('submit', async (evt) => {
+      evt.preventDefault();
+      const body = {
+        name: evt.target.name.value || undefined,
+        start_time: evt.target.start.value,
+        end_time: evt.target.end.value,
+        on_duration: Number(evt.target.on.value),
+        off_duration: Number(evt.target.off.value),
+      };
+      await fetch('/api/schedules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      evt.target.reset();
+      fetchSchedules();
+    });
+
+    // Handle toggle button click to toggle AC power
+    document.getElementById('toggleBtn').addEventListener('click', async () => {
+      await fetch('/api/toggle', { method: 'POST' });
+      fetchStatus();
+    });
+
+    // Handle enable schedules button click to enable all schedules
+    document.getElementById('enableSchedulesBtn').addEventListener('click', async () => {
+      await fetch('/api/enable_schedules', { method: 'POST' });
+    });
+
+    fetchStatus();
+    fetchSchedules();
+    setInterval(fetchStatus, 2000);
+  </script>
+</body>
+
+</html>
