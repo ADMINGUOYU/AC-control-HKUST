@@ -56,6 +56,7 @@ def main(argv: list[str] | None = None) -> None:
     )
 
     # Get the AC controller up and running
+    print("Starting AC controller...")
     controller = ACController(login_config)
     controller.start()
     
@@ -65,11 +66,13 @@ def main(argv: list[str] | None = None) -> None:
 
     # Start the status server in a separate thread to avoid blocking
     # the main thread
+    print(f"Starting status server on port {args.port}...")
     server = start_status_server(args.port, status_store)
     threading.Thread(target = server.serve_forever, daemon = True).start()
 
     # Start the UI (this will block until the UI is closed)
     # Hand over control
+    print("Starting UI...")
     ACControlWindow(controller, status_store)
 
 # Entry point

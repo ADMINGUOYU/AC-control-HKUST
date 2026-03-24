@@ -240,6 +240,7 @@ class ACControlWindow:
         self.controller.logout()
         self.log_data("Logging out...")
         # Check if the logout was successful before closing the window
+        # TODO: Implement a more robust way to check if the logout was successful
         if self.controller.driver is None:
             self.mainWindow.destroy()
         else:

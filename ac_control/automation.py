@@ -106,10 +106,12 @@ class ACController:
             self.wait.until(EC.element_to_be_clickable(self.NEXTBUTTON)).click()
             
             # Wait until user complete DUO
+            print("Please complete the DUO 2FA authentication when prompted >>>")
             # And click "No, other people use this device" after DUO (for security resons)
             # This time we wait for longer time (2 minutes) (modify self.wait's timeout)
             self.wait.timeout = 120
             self.wait.until(EC.element_to_be_clickable(self.DUO_OTHERPEOPLE_USING_DEVICE)).click()
+            print("DUO authentication completed. Continuing with the login flow...")
             # Click "No" on "Keep me signed in?" prompt
             self.wait.until(EC.element_to_be_clickable(self.DO_NOT_KEEP_SIGNED_IN)).click()
             self.wait.timeout = 30
@@ -117,7 +119,8 @@ class ACController:
         except Exception:
             # The page flow can differ if the user is already authenticated; allow
             # the user to continue to DUO or any additional prompts manually.
-            pass
+            print("Login flow encountered an issue. Please complete any remaining steps manually.")
+            print("If in headless mode, please kill and restart the program.")
 
     # Methods to interact with the AC control page
     # Get the current AC status (ON/OFF)
