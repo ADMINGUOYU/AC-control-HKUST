@@ -1,0 +1,7 @@
+# Ignore virtual environment and compiled Python files
+.venv/
+__pycache__/
+*.pyc
+
+# Ignore vscode settings
+.vscode/
