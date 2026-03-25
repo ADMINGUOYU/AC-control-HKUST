@@ -42,6 +42,21 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     )
     return parser.parse_args(argv)
 
+# Helper: IP getter
+def get_local_ip() -> str:
+    import socket
+    try:
+        # Connect to an external host to determine the local IP address
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.connect(("8.8.8.8", 80))
+            local_ip = s.getsockname()[0]
+    except Exception:
+        local_ip = "127.0.0.1"
+    # Revoke import
+    del socket
+    # Return the local IP address
+    return local_ip
+
 # Main function
 def main(argv: list[str] | None = None) -> None:
 
@@ -75,12 +90,11 @@ def main(argv: list[str] | None = None) -> None:
     server_thread = threading.Thread(target = server.serve_forever, daemon = True)
     server_thread.start()
 
-    # Get the local IP address for user convenience
-    import socket
-    local_ip = socket.gethostbyname(socket.gethostname())
-    del socket
+    # Get the current machine's IP address
+    local_ip = get_local_ip()
+
     # Keep the main thread alive while the server is runnings
-    print(f"\n\033[1mWeb dashboard ready.\033[0m Please access it at:\n\thttp://localhost:{args.port} or\n\thttp://{local_ip}:{args.port}\nfrom other devices on the same network.")
+    print(f"\n\033[1mWeb dashboard ready.\033[0m Please access it at:\n\thttp://localhost:{args.port} OR\n\thttp://{local_ip}:{args.port}\nfrom other devices on the same network.")
     print("Press \033[1m[Any Key]\033[0m to stop the application safely.")
     
     # Wait for user input to exit, or handle keyboard interrupt gracefully

@@ -33,6 +33,23 @@ if [[ ! -d "${VENV_PATH}" ]]; then
   exit 1
 fi
 
+# Get determine OS
+OS_TYPE="$(uname -s)"
+
+# Make source command work on Windows and Linux/MacOS
+if [[ "${OS_TYPE}" == "MINGW"* || "${OS_TYPE}" == "CYGWIN"* || "${OS_TYPE}" == "MSYS"* ]]; then
+    VENV_BIN="${VENV_PATH}/Scripts"
+else
+    VENV_BIN="${VENV_PATH}/bin"
+fi
+
+# Check python cmd
+if command -v python3 &> /dev/null; then
+    PYTHON_EXE="python3"
+else
+    PYTHON_EXE="python"
+fi
+
 # Adds the --headless flag if AC_HEADLESS is set to "1" or "true"
 HEADLESS_FLAG=()
 if [[ "${AC_HEADLESS:-}" == "1" || "${AC_HEADLESS:-}" == "true" ]]; then
@@ -48,20 +65,6 @@ echo "  Username: ${AC_USERNAME}"
 echo "  Password: ${AC_PASSWORD}"
 echo "  Headless Mode: ${AC_HEADLESS}"
 echo "  Port: ${AC_PORT}"
-
-# Make source command work on Windows and Linux/MacOS
-if [[ "${OS_TYPE}" == "MINGW"* || "${OS_TYPE}" == "CYGWIN"* || "${OS_TYPE}" == "MSYS"* ]]; then
-    VENV_BIN="${VENV_PATH}/Scripts"
-else
-    VENV_BIN="${VENV_PATH}/bin"
-fi
-
-# Check python cmd
-if command -v python3 &> /dev/null; then
-    PYTHON_EXE="python3"
-else
-    PYTHON_EXE="python"
-fi
 
 # Activate the virtual environment and run the main application
 source "${VENV_BIN}/activate"
