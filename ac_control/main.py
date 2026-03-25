@@ -75,10 +75,13 @@ def main(argv: list[str] | None = None) -> None:
     server_thread = threading.Thread(target = server.serve_forever, daemon = True)
     server_thread.start()
 
+    # Get the local IP address for user convenience
+    import socket
+    local_ip = socket.gethostbyname(socket.gethostname())
+    del socket
     # Keep the main thread alive while the server is runnings
-    # Print in bold
-    print(f"\n\033[1mWeb dashboard ready.\033[0m Please access it at:\t\nhttp://localhost:{args.port} or http://<IP_ADDRESS>:{args.port} from other devices on the same network.")
-    print("Press [Any Key] to stop the application safely.")
+    print(f"\n\033[1mWeb dashboard ready.\033[0m Please access it at:\n\thttp://localhost:{args.port} or\n\thttp://{local_ip}:{args.port}\nfrom other devices on the same network.")
+    print("Press \033[1m[Any Key]\033[0m to stop the application safely.")
     
     # Wait for user input to exit, or handle keyboard interrupt gracefully
     try:

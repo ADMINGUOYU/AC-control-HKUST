@@ -61,7 +61,13 @@ class ACController:
         """
 
         # Get chrome driver path
-        driver_path = Path(sys.prefix) / "bin" / "chromedriver"
+        # We expect /bin for Linux/MacOS and /Scripts for Windows.
+        driver_path = Path(sys.prefix).resolve()
+        if sys.platform.startswith("win"):
+            driver_path = driver_path / "Scripts" / "chromedriver.exe"
+        else:
+            driver_path = driver_path / "bin" / "chromedriver"
+        # Check if the driver exists at the expected location
         if not driver_path.exists():
             raise ACControllerError(f"Chromedriver not found at {driver_path}. Please run setup.sh to install it.")
 
