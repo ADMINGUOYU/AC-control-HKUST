@@ -43,13 +43,6 @@ else
     VENV_BIN="${VENV_PATH}/bin"
 fi
 
-# Check python cmd
-if command -v python3 &> /dev/null; then
-    PYTHON_EXE="python3"
-else
-    PYTHON_EXE="python"
-fi
-
 # Adds the --headless flag if AC_HEADLESS is set to "1" or "true"
 HEADLESS_FLAG=()
 if [[ "${AC_HEADLESS:-}" == "1" || "${AC_HEADLESS:-}" == "true" ]]; then
@@ -68,4 +61,4 @@ echo "  Port: ${AC_PORT}"
 
 # Activate the virtual environment and run the main application
 source "${VENV_BIN}/activate"
-${PYTHON_EXE} -m ac_control.main --username "${AC_USERNAME}" --password "${AC_PASSWORD}" "${PORT_FLAG[@]}" "${HEADLESS_FLAG[@]}"
+python -m ac_control.main --username "${AC_USERNAME}" --password "${AC_PASSWORD}" "${PORT_FLAG[@]}" "${HEADLESS_FLAG[@]}"
