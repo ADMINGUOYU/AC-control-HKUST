@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
 # This script sets up a Python virtual environment for the project, 
-# installs dependencies, and preinstalls chromedriver for Selenium tests. 
+# installs dependencies, and preinstalls chromedriver for Selenium tests.
+
+# Made for Linux, macOS, and Windows (Git Bash/Cygwin/MSYS2).
+# For Windows Command Prompt or PowerShell, use setup.bat instead.
 
 # Set strict mode for better error handling
 set -euo pipefail
@@ -149,7 +152,7 @@ install_chromedriver_selenium() {
     log_info "Installing chromedriver via selenium..."
 
     # Set selenium cache directory
-    SE_CACHE_PATH="${VENV_PATH}/.cache/selenium"
+    SE_CACHE_PATH="${VENV_PATH}/.cache"
 
     # Pip install webdriver-manager
     pip install webdriver-manager
@@ -181,7 +184,7 @@ install_chromedriver_selenium() {
     fi
 
     # Clean up selenium cache
-    rm -rf "${VENV_PATH}/.cache/selenium"
+    rm -rf "${SE_CACHE_PATH}"
 
     # Uninstall webdriver-manager
     pip uninstall -y webdriver-manager
