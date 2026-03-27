@@ -18,7 +18,8 @@ All it does is to turn the A/C **ON** and **OFF** at a set interval. Helping you
 ## Usage
 
 > [!TIP]
-> Your system must have Chrome or Chromium installed to run the scheduler, as it relies on Selenium WebDriver to automate the browser interactions.
+> Your system must have **Chrome** or **Chromium** installed to run the scheduler, as it relies on Selenium WebDriver to automate the browser interactions.\
+**Microsoft Edge is not compatible in some cases.**
 
 1. Clone the repository
     ```bash
@@ -26,15 +27,29 @@ All it does is to turn the A/C **ON** and **OFF** at a set interval. Helping you
     ```
 2. Run the setup script to install the dependencies 
     ```bash
+    # Linux/MacOS users
     bash setup.sh
     ```
-3. Configure your account details (refer to `start.sh`)
+    ```bat
+    @REM Windows users
+    @REM Double-click runnable
+    setup.bat
+    ```
+3. Configure your account details (refer to `start.sh` or `start.bat` for the required environment variables)
     > You can set the corresponding `AC_USERNAME` and `AC_PASSWORD` environment variables to avoid hardcoding your credentials in the script.
 
-    > ALWAYS KEEP YOUR CREDENTIALS SAFE!
+    > For Windows users using `start.bat`, right-click the file, select "Edit", and set the `AC_USERNAME` and `AC_PASSWORD` variables in the script before saving it.
+
+    > **ALWAYS KEEP YOUR CREDENTIALS SAFE!**
 4. Run the start script to start the scheduler
     ```bash
+    # Linux/MacOS users
     bash start.sh
+    ```
+    ```bat
+    @REM Windows users
+    @REM Double-click runnable
+    start.bat
     ```
 
 > [!TIP]
