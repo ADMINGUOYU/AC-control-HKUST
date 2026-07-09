@@ -44,7 +44,7 @@ class ACController:
     EMAILFIELD = (By.ID, "i0116")
     PASSWORDFIELD = (By.ID, "i0118")
     NEXTBUTTON = (By.ID, "idSIButton9")
-    DUO_OTHERPEOPLE_USING_DEVICE = (By.ID, "dont-trust-browser-button")
+    DUO_OTHERPEOPLE_USING_DEVICE = (By.XPATH, "//button[text()='No, other people use this device']")
     DO_NOT_KEEP_SIGNED_IN = (By.ID, "idBtn_Back")
     LOGOUT_SIGNAL = (By.ID, "login_workload_logo_text")
 
